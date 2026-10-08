@@ -1,3 +1,13 @@
+<div align="center">
+  <h1>SOSPA-PLD</h1>
+  
+  <h3>[NeurIPS 2026] Beyond Chamfer Distance: Granular Order-aware Evaluation Metric For Online Mapping </h3>
+  
+  [![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2605.22578)
+  
+  <img src="./resources/high_level_example.pdf" width="950px">
+</div>
+
 # sospa_eval
 
 Framework-free evaluation metrics for polyline/trajectory map prediction:
@@ -153,4 +163,16 @@ result = evaluator.evaluate(
 print(result["mPLD"])  # SOSPA: mean PLD_cost across classes.
 print(result["divider"]["PLD_cost"])
 print(result["divider"]["PLD_loc"])
+```
+
+## Citation
+If you find this work useful in your research, then you can cite it following.
+```
+@InProceedings{lehocine2026sospa,
+    author    = {Chouaib Bencheikh Lehocine, Adam Lilja, Junsheng Fu, Lars Hammarstrand},
+    title     = {Beyond Chamfer Distance: Granular Order-aware Evaluation Metric For Online Mapping},
+    archivePrefix={arXiv},
+    url={https://arxiv.org/abs/2605.22578}, 
+    year      = {2026},
+}
 ```
