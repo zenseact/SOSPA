@@ -5,7 +5,7 @@
   
   [![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2605.22578)
   
-  <img src="./resources/high_level_example.pdf" width="950px">
+  <img src="./resources/high_level_example.png" width="950px">
 </div>
 
 # sospa_eval
@@ -166,7 +166,7 @@ print(result["divider"]["PLD_loc"])
 ```
 
 ## Citation
-If you find this work useful in your research, then you can cite it following.
+If you find this work useful in your research, then you can cite as follows.
 ```
 @InProceedings{lehocine2026sospa,
     author    = {Chouaib Bencheikh Lehocine, Adam Lilja, Junsheng Fu, Lars Hammarstrand},
