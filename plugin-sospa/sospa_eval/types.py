@@ -27,7 +27,7 @@ class MetricsNormType(IntEnum):
         else:  # NoNorm
             divider = 1.0
 
-        divider = np.maximum(divider, np.finfo(np.float32).eps)
+        divider = np.maximum(divider, float(np.finfo(np.float32).eps))
         return 1.0 / divider
 
 def normalize_cost(norm_type_int: int, cost: float, len_x: float, len_y: float, scaled_gap_penalty: float) -> float:
@@ -65,6 +65,17 @@ class MatchingMetric(IntEnum):
             return metric_map[metric_str]
         except KeyError:
             raise ValueError(f"Unknown metric type: {metric_str}")
+        
+    def to_mean_aggregate_score_key(self) -> str:
+        """Get the corresponding instance-level metric key for this metric type."""
+        if self == MatchingMetric.Chamfer:
+            return "mAP"
+        elif self == MatchingMetric.SOSPA:
+            return "mPLD"
+        elif self == MatchingMetric.FRECHET:
+            return "mAP"
+        else:
+            raise ValueError(f"Unknown metric type: {self}")
 
 
 @dataclass

@@ -73,6 +73,7 @@ if _PLUGIN_DIR not in sys.path:
     sys.path.insert(0, _PLUGIN_DIR)
 
 from sospa_eval.light_evaluator import LightVectorEvaluate, _load_file
+from sospa_eval.types import MatchingMetric
 
 # ---------------------------------------------------------------------------
 # Default categories (NuScenes 3-class)
@@ -117,6 +118,7 @@ def _save_results_json(
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     roi_str = f"{roi_size[0]}x{roi_size[1]}"
+    mScore_key = MatchingMetric.to_metric_type(metric).to_mean_aggregate_score_key()
     filename = f"{roi_str}_{metric}_{timestamp}.json"
     out_path = os.path.join(output_dir, filename)
 
@@ -128,11 +130,11 @@ def _save_results_json(
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "num_scenes": num_scenes,
         "categories": categories,
-        "mAP": result_dict.get("mAP"),
+        mScore_key: result_dict.get(mScore_key),
         "results": {
             cat: {k: v for k, v in vals.items()}
             for cat, vals in result_dict.items()
-            if cat != "mAP"
+            if cat != mScore_key
         },
     }
 

@@ -278,8 +278,8 @@ class LightVectorEvaluate:
             Full result dict with per-category entries (each containing
             ``num_gts``, ``num_preds``, plus either AP-related keys or
             PLD-related keys depending on the metric) and a top-level
-            ``"mAP"`` key (AP mean for AP-based metrics, PLD cost mean for
-            PLD-based metrics).
+            mean-score key: ``"mAP"`` (AP mean) for ``chamfer``/``frechet``,
+            ``"mPLD"`` (PLD cost mean) for ``sospa``.
         """
         submission = _load_file(pred_file)
         results = submission["results"]
@@ -320,6 +320,7 @@ class LightVectorEvaluate:
         print("=" * 60)
 
         result_dict: Dict = {}
+        mScore_key = metric_type.to_mean_aggregate_score_key()
         sum_mScore = 0.0
         t0 = time()
 
@@ -337,7 +338,7 @@ class LightVectorEvaluate:
             sum_mScore += class_score
 
         mScore = sum_mScore / len(self.id2cat)
-        result_dict["mAP"] = mScore
+        result_dict[mScore_key] = mScore
 
         print(f"\nCompute time: {time() - t0:.2f}s")
         _print_results(self.id2cat, result_dict, self.thresholds, metric_type)

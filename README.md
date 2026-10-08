@@ -6,7 +6,7 @@ Framework-free evaluation metrics for polyline/trajectory map prediction:
 
 This package is the extracted, standalone core of the map-tracking evaluation
 suite. It has **no dependency on `mmdet3d`/`mmcv`** — the framework glue
-(`raster_eval`, `vector_eval`) lives in the consuming repository.
+(`vector_eval`) lives in the consuming repository.
 
 ## Setup
 
@@ -23,49 +23,37 @@ To import `sospa_eval` from your own code, run from `plugin-sospa/` or add it to
 export PYTHONPATH=$PWD/plugin-sospa:$PYTHONPATH
 ```
 
-## Example Data
-
-This repository includes trimmed evaluation fixtures under `plugin-sospa/examples/`:
-
-- `nusc_60x30_gts_100.pkl`
-- `nusc_60x30_preds_100.json`
-
-They are extracted from the larger workspace fixtures and contain the first 100
-scene tokens from:
-
-- `work_dirs/streamapnet_gts/tmp_gts_nusc_60x30_newsplit.pkl`
-- `work_dirs/streammapnet_master/submission_vector_60x30.json`
-
-These files are intended for documentation examples and quick smoke tests, so
-you do not need to change `EVAL_SAMPLES_LIMIT` to reproduce the commands below.
-
-## Minimal Working Example
+## Public API
 
 ```python
-import json
-import pickle
-
-from sospa_eval import LightVectorEvaluate
-
-with open("plugin-sospa/examples/nusc_60x30_gts_100.pkl", "rb") as f:
-    gts = pickle.load(f)
-
-evaluator = LightVectorEvaluate(
-    gts=gts,
-    roi_size=(60, 30),
-    categories={"divider": 0, "ped_crossing": 1, "boundary": 2},
-    n_workers=0,
+from sospa_eval import (
+    MatchingMetric,
+    MetricsNormType,
+    Polyline,
+    MetricsConfig,
+    METRICS_CONFIG,
+    calculate_average_precision,
+    calculate_pld,
+    instance_match,
+    instance_match_pld,
+    interpolate_polylines,
+    LightVectorEvaluate,
 )
-
-result = evaluator.evaluate(
-    pred_file="plugin-sospa/examples/nusc_60x30_preds_100.json",
-    metric="sospa",
-)
-
-print(result["mAP"])  # For SOSPA this is the mean PLD_cost across classes.
-print(result["divider"]["PLD_cost"])
-print(result["divider"]["PLD_loc"])
 ```
+
+## Package Boundaries
+
+- `plugin-sospa` / `sospa_eval` owns SOSPA, PLD, Chamfer, Fréchet, interpolation,
+    instance matching, and the framework-free evaluator class.
+- The framework-specific glue for the main training/evaluation stack remains in
+    the parent repository, not in this package.
+
+## Tests
+
+```bash
+cd plugin-sospa && python -m unittest discover -s sospa_eval/test -t .
+```
+
 
 ## Running LightVectorEvaluate With SOSPA
 
@@ -83,7 +71,8 @@ python tools/evaluate_light.py \
 ```
 
 That command prints the per-class PLD table and writes a JSON result file under
-`test_light/`.
+`test_light/`. The top-level mean score is saved as `mPLD` for `sospa` and as
+`mAP` for `chamfer`/`frechet`.
 
 ## Input / Output Contracts
 
@@ -127,28 +116,41 @@ Prediction files may be JSON or pickle, and must follow the submission layout:
 - `vectors`, `scores`, and `labels` must be aligned by index.
 - Missing scene tokens are treated as empty predictions by the evaluator.
 
-## Public API
+## Example For Evaluation Data
+
+This repository includes trimmed evaluation fixtures under `tools/gts_pred_examples`:
+
+- `nusc_60x30_gts_100.pkl`
+- `nusc_60x30_preds_100.json`
+
+They are StreamMapNet ground-truth and predictions from 100 nuScenes scenes.
+
+These files are intended for documentation examples on expected input/output format for LightVectorEvaluate.
+
+## Minimal Working Example
 
 ```python
-from sospa_eval import (
-    MatchingMetric, MetricsNormType, Polyline,
-    MetricsConfig, METRICS_CONFIG,
-    calculate_average_precision, calculate_pld,
-    instance_match, instance_match_pld,
-    interpolate_polylines,
-    LightVectorEvaluate,
+import json
+import pickle
+
+from sospa_eval import LightVectorEvaluate
+
+with open("tools/gts_pred_examples/nusc_60x30_gts_100.pkl", "rb") as f:
+    gts = pickle.load(f)
+
+evaluator = LightVectorEvaluate(
+    gts=gts,
+    roi_size=(60, 30),
+    categories={"divider": 0, "ped_crossing": 1, "boundary": 2},
+    n_workers=0,
 )
-```
 
-## Package Boundaries
+result = evaluator.evaluate(
+    pred_file="tools/gts_pred_examples/nusc_60x30_preds_100.json",
+    metric="sospa",
+)
 
-- `plugin-sospa` / `sospa_eval` owns SOSPA, PLD, Chamfer, Fréchet, interpolation,
-    instance matching, and the framework-free evaluator class.
-- The framework-specific glue for the main training/evaluation stack remains in
-    the parent repository, not in this package.
-
-## Tests
-
-```bash
-cd plugin-sospa && python -m unittest discover -s sospa_eval/test -t .
+print(result["mPLD"])  # SOSPA: mean PLD_cost across classes.
+print(result["divider"]["PLD_cost"])
+print(result["divider"]["PLD_loc"])
 ```
